@@ -45,6 +45,24 @@ node dist/cli.js scan /path/to/workspace --html --lang en
 node dist/cli.js diff old-scan.json new-scan.json
 ```
 
+### 更新 CLI
+
+如果你是从 GitHub 全局安装的，重新运行安装命令即可更新到 GitHub 上的最新版本：
+
+```bash
+npm install -g github:WangHopeDream/agentscope
+agentscope --version
+```
+
+如果你是从源码运行的：
+
+```bash
+git pull
+npm install
+npm run build
+node dist/cli.js --version
+```
+
 安装成 package 后，命令是：
 
 ```bash
@@ -136,6 +154,24 @@ node dist/cli.js scan /path/to/workspace --json --output scan.json
 node dist/cli.js scan /path/to/workspace --html
 node dist/cli.js scan /path/to/workspace --html --lang en
 node dist/cli.js diff old-scan.json new-scan.json
+```
+
+### Update The CLI
+
+If you installed globally from GitHub, run the install command again to update to the latest GitHub version:
+
+```bash
+npm install -g github:WangHopeDream/agentscope
+agentscope --version
+```
+
+If you run from source:
+
+```bash
+git pull
+npm install
+npm run build
+node dist/cli.js --version
 ```
 
 When installed as a package, the binary is:
