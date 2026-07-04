@@ -12,6 +12,11 @@
 - Add a `codex` adapter for `AGENTS.md` and `.agents/skills`.
 - Generate a stable JSON scan output.
 - Render a self-contained HTML report from the JSON output.
+- Add `agentscope diff` for scan-to-scan comparison.
+
+Current status: first Node/TypeScript CLI is implemented with JSON, HTML, diff,
+Codex rules, Codex Skills, config surfaces, diagnostics, and multi-repository
+workspace detection.
 
 ## Phase 2: Cross-Agent Adapters
 

@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentscope.dev/schemas/scan-output.schema.json",
+  "title": "AgentScope Scan Output",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "generator",
+    "project",
+    "summary",
+    "rules",
+    "skills",
+    "configs",
+    "relationships",
+    "diagnostics"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1.0"
+    },
+    "generator": {
+      "type": "object",
+      "required": ["name", "version", "generatedAt", "runtime"],
+      "properties": {
+        "name": { "const": "agentscope" },
+        "version": { "type": "string" },
+        "generatedAt": { "type": "string" },
+        "runtime": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "project": {
+      "type": "object",
+      "required": ["id", "name", "root", "description", "adapters", "git", "keyFiles"],
+      "properties": {
+        "id": { "const": "project" },
+        "name": { "type": "string" },
+        "root": { "type": "string" },
+        "description": { "type": "string" },
+        "adapters": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/adapter" }
+        },
+        "git": { "type": "object" },
+        "keyFiles": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/fileRecord" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "required": ["skillCount", "ruleCount", "diagnosticCount", "adapters"],
+      "properties": {
+        "skillCount": { "type": "integer", "minimum": 0 },
+        "ruleCount": { "type": "integer", "minimum": 0 },
+        "diagnosticCount": { "type": "integer", "minimum": 0 },
+        "adapters": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/adapter" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "rules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rule" }
+    },
+    "skills": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/skill" }
+    },
+    "configs": { "type": "object" },
+    "relationships": {
+      "type": "object",
+      "required": ["nodes", "edges"],
+      "properties": {
+        "nodes": { "type": "array" },
+        "edges": { "type": "array" }
+      },
+      "additionalProperties": true
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/diagnostic" }
+    }
+  },
+  "$defs": {
+    "adapter": {
+      "enum": ["codex", "claude-code", "cursor", "generic-folder"]
+    },
+    "layer": {
+      "enum": ["project", "user", "admin", "plugin", "system", "unknown"]
+    },
+    "fileRecord": {
+      "type": "object",
+      "required": ["name", "path", "relativePath", "extension", "size"],
+      "properties": {
+        "name": { "type": "string" },
+        "path": { "type": "string" },
+        "relativePath": { "type": "string" },
+        "extension": { "type": "string" },
+        "size": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "rule": {
+      "type": "object",
+      "required": ["id", "kind", "name", "adapter", "path", "relativePath", "summary"],
+      "properties": {
+        "id": { "type": "string" },
+        "kind": { "const": "agent-rule" },
+        "name": { "type": "string" },
+        "adapter": { "$ref": "#/$defs/adapter" },
+        "path": { "type": "string" },
+        "relativePath": { "type": "string" },
+        "summary": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "skill": {
+      "type": "object",
+      "required": ["id", "kind", "adapter", "name", "summary", "layer", "path", "workflow", "resources"],
+      "properties": {
+        "id": { "type": "string" },
+        "kind": { "const": "skill" },
+        "adapter": { "$ref": "#/$defs/adapter" },
+        "name": { "type": "string" },
+        "summary": { "type": "string" },
+        "layer": { "$ref": "#/$defs/layer" },
+        "path": { "type": "string" },
+        "workflow": {
+          "type": "object",
+          "required": ["source", "steps"],
+          "properties": {
+            "source": { "enum": ["explicit", "inferred"] },
+            "steps": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": true
+        },
+        "resources": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
+    "diagnostic": {
+      "type": "object",
+      "required": ["id", "severity", "title", "detail", "path"],
+      "properties": {
+        "id": { "type": "string" },
+        "severity": { "enum": ["info", "warning", "error"] },
+        "title": { "type": "string" },
+        "detail": { "type": "string" },
+        "path": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

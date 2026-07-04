@@ -3,14 +3,14 @@
 AgentScope is designed as a layered tool:
 
 ```text
-CLI
+Node.js / TypeScript CLI
   -> scanner core
     -> adapters
       -> codex
       -> claude-code
       -> cursor
       -> generic-folder
-    -> normalized graph/schema
+    -> normalized workspace model/schema
   -> renderers
     -> single-file HTML
     -> JSON
@@ -38,8 +38,15 @@ The normalized model should include:
 - Relationships between objects.
 - Diagnostics and safety findings.
 
-## First Extraction Target
+## Implementation Notes
 
-The first implementation will be extracted from the existing
-`project-workflow-map` Codex skill, while keeping BA-specific assumptions out of
-the core package.
+- The first implementation is being migrated from the existing
+  `project-workflow-map` Codex skill, while keeping BA-specific assumptions out
+  of the core package.
+- `agentscope scan <path>` scans the path the user names. It does not
+  automatically promote to a Git repository root because AgentScope workspaces
+  can contain multiple child repositories.
+- `--project-only` limits project/user boundary scanning so public fixtures and
+  tests can avoid local user-level Codex state.
+- The current HTML renderer is a dependency-free single-file client. A React
+  renderer can be added behind the same scan JSON once the schema stabilizes.

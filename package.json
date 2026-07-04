@@ -1,0 +1,39 @@
+{
+  "name": "agentscope",
+  "version": "0.1.0",
+  "description": "Open-source inspector for agent-native project workspaces.",
+  "type": "module",
+  "bin": {
+    "agentscope": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "examples",
+    "docs",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
+    "scan:self": "node dist/cli.js scan .. --json --html --output examples/generated/self-scan.json --html-output examples/generated/self-scan.html",
+    "privacy:check": "node scripts/privacy-check.mjs",
+    "check": "npm run build && npm run privacy:check"
+  },
+  "keywords": [
+    "agents",
+    "codex",
+    "claude-code",
+    "cursor",
+    "workspace",
+    "inspector"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.0"
+  }
+}

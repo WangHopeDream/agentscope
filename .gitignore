@@ -1,11 +1,68 @@
+# OS / editor
 .DS_Store
-__pycache__/
-*.pyc
-.venv/
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Dependencies / build output
+node_modules/
 dist/
 build/
 *.egg-info/
-node_modules/
+__pycache__/
+*.pyc
+.venv/
+
+# Logs / caches
 *.log
+.cache/
+.tmp/
+tmp/
+coverage/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+secrets.*
+credentials.*
+
+# Local agent state at the repository root
+/.codex/
+/.agents/
+/.claude/
+/.cursor/
+
+# Generated AgentScope / workflow-map outputs
 agent-workflow-map.html
+agent-workflow-map*.html
 agentscope-report.html
+agentscope-report*.html
+codex-workflow-map.html
+codex-workflow-map*.html
+*.agentscope.html
+*.agentscope.json
+scan.json
+scan-*.json
+*-scan.json
+*-scan-*.json
+!schemas/*.schema.json
+examples/generated/
+generated/
+reports/
+artifacts/
+exports/
+
+# Local notes or scratch files that may mention private workspaces
+*.local.md
+*.local.json
+*.local.toml
+local-*.md
+local-*.json
