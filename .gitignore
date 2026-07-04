@@ -1,0 +1,11 @@
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+dist/
+build/
+*.egg-info/
+node_modules/
+*.log
+agent-workflow-map.html
+agentscope-report.html
