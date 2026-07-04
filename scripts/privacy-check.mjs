@@ -33,6 +33,7 @@ const allowList = [
   ["src/scanner/fs.ts", "SECRET_KEY_RE"],
   ["src/scanner/fs.ts", "token|secret|password"],
   ["src/cli.ts", "agentscope-report.html"],
+  ["src/renderers/html.ts", "agentscope-report.html"],
 ];
 
 const candidates = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { encoding: "utf8" })

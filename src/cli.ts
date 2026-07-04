@@ -52,7 +52,11 @@ function runScan(args: string[], defaultLanguage: Language): number {
 
   if (parsed.html) {
     const htmlPath = parsed.htmlOutput || (parsed.output && !parsed.json ? parsed.output : join(scan.project.root, "agentscope-report.html"));
-    writeOutput(htmlPath, renderHtml(scan, { language: parsed.language }), parsed.language);
+    writeOutput(
+      htmlPath,
+      renderHtml(scan, { language: parsed.language, reportPath: resolve(htmlPath), projectOnly: !parsed.includeUser }),
+      parsed.language,
+    );
   }
 
   if (!parsed.json) {

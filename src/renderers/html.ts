@@ -3,12 +3,16 @@ import type { AgentScopeScan } from "../types.js";
 
 export interface RenderHtmlOptions {
   language?: Language;
+  reportPath?: string;
+  projectOnly?: boolean;
 }
 
 export function renderHtml(data: AgentScopeScan, options: RenderHtmlOptions = {}): string {
   const language = options.language || "zh";
   const payload = JSON.stringify(data, null, 2).replace(/<\//g, "<\\/");
   const text = JSON.stringify(HTML_TEXT).replace(/<\//g, "<\\/");
+  const reportPath = options.reportPath || `${data.project.root}/agentscope-report.html`;
+  const refreshCommand = buildRefreshCommand(data.project.root, reportPath, language, options.projectOnly === true);
   return `<!doctype html>
 <html lang="${language === "zh" ? "zh-CN" : "en"}">
 <head>
@@ -23,6 +27,8 @@ export function renderHtml(data: AgentScopeScan, options: RenderHtmlOptions = {}
   <script>
 const I18N = ${text};
 const DEFAULT_LANG = ${JSON.stringify(language)};
+const REPORT_PATH = ${JSON.stringify(reportPath)};
+const REFRESH_COMMAND = ${JSON.stringify(refreshCommand)};
 ${JS}
   </script>
 </body>
@@ -35,6 +41,12 @@ const HTML_TEXT = {
     languageAlt: "English",
     eyebrow: "AgentScope 工作区检查器",
     generated: "生成时间",
+    refreshCommand: "复制刷新命令",
+    refreshForAgent: "复制给 Agent",
+    copiedCommand: "已复制刷新命令",
+    copiedAgentPrompt: "已复制给 Agent 的刷新请求",
+    copyFailed: "复制失败，请手动复制命令",
+    agentPrompt: "请刷新这个 AgentScope 报告。请在当前机器上运行以下命令，然后告诉我新的报告路径和关键计数：",
     adapters: "适配器",
     branch: "分支",
     childReposShort: "个子仓库",
@@ -141,6 +153,12 @@ const HTML_TEXT = {
     languageAlt: "中文",
     eyebrow: "AgentScope Workspace Inspector",
     generated: "Generated",
+    refreshCommand: "Copy refresh command",
+    refreshForAgent: "Copy for Agent",
+    copiedCommand: "Refresh command copied",
+    copiedAgentPrompt: "Agent refresh prompt copied",
+    copyFailed: "Copy failed. Please copy the command manually.",
+    agentPrompt: "Please refresh this AgentScope report. Run the following command on this machine, then tell me the new report path and key counts:",
     adapters: "Adapters",
     branch: "Branch",
     childReposShort: "child repos",
@@ -281,9 +299,12 @@ button { cursor: pointer; }
 h1 { margin: 3px 0 4px; font-size: 25px; line-height: 1.15; letter-spacing: 0; }
 .subtitle { color: var(--muted); overflow-wrap: anywhere; }
 .top-actions { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 9px; }
+.action-btn { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 5px 9px; font-size: 12px; }
+.action-btn:hover { border-color: var(--accent); }
 .lang-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--panel-2); }
 .lang-toggle button { border: 0; background: transparent; color: var(--muted); padding: 5px 9px; font-size: 12px; }
 .lang-toggle button.active { background: var(--ink); color: #fff; }
+.copy-status { min-height: 16px; margin-top: 5px; color: var(--accent); font-size: 12px; text-align: right; }
 .generated { color: var(--muted); text-align: right; font-size: 12px; white-space: nowrap; }
 .metrics { margin-top: 16px; display: grid; grid-template-columns: repeat(8, minmax(82px, 1fr)); gap: 8px; }
 .metric { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); padding: 10px; min-width: 0; }
@@ -358,7 +379,8 @@ const state = {
   layers: new Set(['project','user','admin','plugin','system','unknown']),
   scenario: 'All',
   selected: null,
-  lang: loadLanguage()
+  lang: loadLanguage(),
+  copyStatus: ''
 };
 function loadLanguage() {
   try {
@@ -370,6 +392,7 @@ function loadLanguage() {
 }
 function setLanguage(lang) {
   state.lang = lang;
+  state.copyStatus = '';
   try { localStorage.setItem('agentscope:lang', lang); } catch {}
   document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
   render();
@@ -399,15 +422,27 @@ function renderTopbar() {
     git.branch ? ui.branch+': '+git.branch : '',
     git.childRepositories?.length ? git.childRepositories.length+' '+ui.childReposShort : ''
   ].filter(Boolean).join('  |  ');
-  return '<header class="topbar"><div class="title-row"><div><div class="eyebrow">'+h(ui.eyebrow)+'</div><h1>'+h(DATA.project.name)+'</h1><div class="subtitle">'+h(subtitle)+'</div></div><div><div class="top-actions">'+languageToggle()+'</div><div class="generated">'+h(ui.generated)+'<br>'+h(DATA.generator.generatedAt)+'<br><span class="path">'+h(DATA.project.root)+'</span></div></div></div><div class="metrics">'+
+  return '<header class="topbar"><div class="title-row"><div><div class="eyebrow">'+h(ui.eyebrow)+'</div><h1>'+h(DATA.project.name)+'</h1><div class="subtitle">'+h(subtitle)+'</div></div><div><div class="top-actions">'+refreshButtons()+languageToggle()+'</div><div class="generated">'+h(ui.generated)+'<br>'+h(DATA.generator.generatedAt)+'<br><span class="path">'+h(DATA.project.root)+'</span><div class="copy-status">'+h(state.copyStatus)+'</div></div></div></div><div class="metrics">'+
     metric(s.skillCount, ui.metrics.skills)+metric(s.projectSkillCount, ui.metrics.project)+metric(s.userSkillCount, ui.metrics.user)+metric(s.pluginSkillCount, ui.metrics.plugin)+metric(s.systemSkillCount, ui.metrics.system)+metric(s.ruleCount, ui.metrics.rules)+metric(s.diagnosticCount, ui.metrics.diagnostics)+metric(s.actionCandidateCount, ui.metrics.actions)+
   '</div></header>';
+}
+function refreshButtons() {
+  const ui = t();
+  return '<button class="action-btn" data-copy-refresh="command">'+h(ui.refreshCommand)+'</button><button class="action-btn" data-copy-refresh="agent">'+h(ui.refreshForAgent)+'</button>';
 }
 function languageToggle() {
   return '<div class="lang-toggle" aria-label="Language"><button data-lang="zh" class="'+(state.lang === 'zh' ? 'active' : '')+'">中文</button><button data-lang="en" class="'+(state.lang === 'en' ? 'active' : '')+'">English</button></div>';
 }
 function wireLanguage() {
   document.querySelectorAll('[data-lang]').forEach(btn => btn.addEventListener('click', () => setLanguage(btn.dataset.lang)));
+  document.querySelectorAll('[data-copy-refresh]').forEach(btn => btn.addEventListener('click', async () => {
+    const kind = btn.dataset.copyRefresh;
+    const ui = t();
+    const text = kind === 'agent' ? ui.agentPrompt+'\\n\\n'+REFRESH_COMMAND : REFRESH_COMMAND;
+    const ok = await copyText(text);
+    state.copyStatus = ok ? (kind === 'agent' ? ui.copiedAgentPrompt : ui.copiedCommand) : ui.copyFailed;
+    render();
+  }));
 }
 function renderSidebar() {
   const ui = t();
@@ -536,6 +571,28 @@ function findSurface(type,id) { const map = { config: DATA.configs.configFiles, 
 function findById(items,id) { return (items || []).find(item => item.id === id); }
 function countBy(items, fn) { return items.reduce((acc,item) => { const key = fn(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {}); }
 function format(template, values) { return String(template).replace(/\\{([a-zA-Z0-9_]+)\\}/g, (_, key) => values[key] ?? ''); }
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {}
+  try {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return ok;
+  } catch {
+    return false;
+  }
+}
 function empty(text) { return '<div class="empty">'+h(text)+'</div>'; }
 init();
 `;
@@ -546,4 +603,23 @@ function escapeHtml(value: unknown): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function buildRefreshCommand(projectRoot: string, reportPath: string, language: Language, projectOnly: boolean): string {
+  const parts = [
+    "agentscope",
+    "scan",
+    shellQuote(projectRoot),
+    "--html",
+    "--html-output",
+    shellQuote(reportPath),
+    "--lang",
+    language,
+  ];
+  if (projectOnly) parts.push("--project-only");
+  return parts.join(" ");
+}
+
+function shellQuote(value: string): string {
+  return `"${value.replace(/(["\\$`])/g, "\\$1")}"`;
 }

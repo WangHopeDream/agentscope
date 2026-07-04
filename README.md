@@ -84,6 +84,13 @@ agentscope diff old-scan.json new-scan.json
 
 生成的 HTML 报告内置语言切换按钮，可以在中文和 English 之间即时切换，不需要重新扫描。
 
+HTML 报告还包含轻量刷新按钮：
+
+- 复制刷新命令：复制一条可重新生成当前报告的 `agentscope scan ... --html-output ...` 命令。
+- 复制给 Agent：复制一段给 Agent 的刷新请求，让 Agent 帮你执行刷新命令。
+
+这个刷新机制不启动本地 server，也不会让静态网页直接执行本机命令。
+
 ## 定位
 
 Dify 和 LangGraph 帮你构建 agent workflows。
@@ -194,6 +201,13 @@ Currently supported:
 - English: enabled with `--lang en`.
 
 Generated HTML reports include a built-in language switcher, so readers can switch between Chinese and English without rescanning.
+
+HTML reports also include lightweight refresh buttons:
+
+- Copy refresh command: copies an `agentscope scan ... --html-output ...` command that regenerates the current report.
+- Copy for Agent: copies a short prompt asking an agent to run the refresh command.
+
+This refresh flow does not start a local server and does not let static HTML execute local commands directly.
 
 ## Positioning
 
