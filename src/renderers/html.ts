@@ -57,10 +57,11 @@ const HTML_TEXT = {
       plugin: "插件",
       system: "系统",
       rules: "规则",
+      commands: "命令",
       diagnostics: "诊断",
       actions: "动作",
     },
-    searchPlaceholder: "搜索 Skill、路径、工作流",
+    searchPlaceholder: "搜索 Skill、命令、路径、工作流",
     layers: "层级",
     scenarios: "场景",
     scanNotes: "扫描说明",
@@ -70,6 +71,7 @@ const HTML_TEXT = {
       skills: "Skills",
       workflows: "工作流",
       rules: "规则",
+      commands: "命令",
       config: "配置",
       diagnostics: "诊断",
     },
@@ -85,6 +87,7 @@ const HTML_TEXT = {
     },
     surfaces: {
       rules: ["规则", "AGENTS.md / CLAUDE.md / Cursor rules"],
+      commands: ["命令", "Claude Code / Cursor slash commands"],
       config: ["配置", "可见配置文件与安全键摘要"],
       mcp: ["MCP", "可见 MCP server 声明"],
       hooks: ["Hooks", "可见 hook 类配置项"],
@@ -112,7 +115,7 @@ const HTML_TEXT = {
       none: "未检测到诊断。",
     },
     details: {
-      empty: "选择一个 Skill、规则、配置项或诊断来查看来源细节。",
+      empty: "选择一个 Skill、命令、规则、配置项或诊断来查看来源细节。",
       missing: "所选项目当前不可见。",
       path: "路径",
       source: "来源",
@@ -169,10 +172,11 @@ const HTML_TEXT = {
       plugin: "Plugin",
       system: "System",
       rules: "Rules",
+      commands: "Commands",
       diagnostics: "Diagnostics",
       actions: "Actions",
     },
-    searchPlaceholder: "Search skills, paths, workflows",
+    searchPlaceholder: "Search skills, commands, paths, workflows",
     layers: "Layers",
     scenarios: "Scenarios",
     scanNotes: "Scan Notes",
@@ -182,6 +186,7 @@ const HTML_TEXT = {
       skills: "Skills",
       workflows: "Workflows",
       rules: "Rules",
+      commands: "Commands",
       config: "Config",
       diagnostics: "Diagnostics",
     },
@@ -197,6 +202,7 @@ const HTML_TEXT = {
     },
     surfaces: {
       rules: ["Rules", "AGENTS.md / CLAUDE.md / Cursor rules"],
+      commands: ["Commands", "Claude Code / Cursor slash commands"],
       config: ["Config", "Visible config files with safe key summaries"],
       mcp: ["MCP", "Visible MCP server declarations"],
       hooks: ["Hooks", "Visible hook-like config entries"],
@@ -224,7 +230,7 @@ const HTML_TEXT = {
       none: "No diagnostics detected.",
     },
     details: {
-      empty: "Select a skill, rule, config item, or diagnostic to inspect source details.",
+      empty: "Select a skill, command, rule, config item, or diagnostic to inspect source details.",
       missing: "The selected item is no longer visible.",
       path: "Path",
       source: "Source",
@@ -306,7 +312,7 @@ h1 { margin: 3px 0 4px; font-size: 25px; line-height: 1.15; letter-spacing: 0; }
 .lang-toggle button.active { background: var(--ink); color: #fff; }
 .copy-status { min-height: 16px; margin-top: 5px; color: var(--accent); font-size: 12px; text-align: right; }
 .generated { color: var(--muted); text-align: right; font-size: 12px; white-space: nowrap; }
-.metrics { margin-top: 16px; display: grid; grid-template-columns: repeat(8, minmax(82px, 1fr)); gap: 8px; }
+.metrics { margin-top: 16px; display: grid; grid-template-columns: repeat(9, minmax(82px, 1fr)); gap: 8px; }
 .metric { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); padding: 10px; min-width: 0; }
 .metric-value { font-size: 20px; font-weight: 760; line-height: 1; }
 .metric-label { margin-top: 5px; color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -423,7 +429,7 @@ function renderTopbar() {
     git.childRepositories?.length ? git.childRepositories.length+' '+ui.childReposShort : ''
   ].filter(Boolean).join('  |  ');
   return '<header class="topbar"><div class="title-row"><div><div class="eyebrow">'+h(ui.eyebrow)+'</div><h1>'+h(DATA.project.name)+'</h1><div class="subtitle">'+h(subtitle)+'</div></div><div><div class="top-actions">'+refreshButtons()+languageToggle()+'</div><div class="generated">'+h(ui.generated)+'<br>'+h(DATA.generator.generatedAt)+'<br><span class="path">'+h(DATA.project.root)+'</span><div class="copy-status">'+h(state.copyStatus)+'</div></div></div></div><div class="metrics">'+
-    metric(s.skillCount, ui.metrics.skills)+metric(s.projectSkillCount, ui.metrics.project)+metric(s.userSkillCount, ui.metrics.user)+metric(s.pluginSkillCount, ui.metrics.plugin)+metric(s.systemSkillCount, ui.metrics.system)+metric(s.ruleCount, ui.metrics.rules)+metric(s.diagnosticCount, ui.metrics.diagnostics)+metric(s.actionCandidateCount, ui.metrics.actions)+
+    metric(s.skillCount, ui.metrics.skills)+metric(s.projectSkillCount, ui.metrics.project)+metric(s.userSkillCount, ui.metrics.user)+metric(s.pluginSkillCount, ui.metrics.plugin)+metric(s.systemSkillCount, ui.metrics.system)+metric(s.ruleCount, ui.metrics.rules)+metric(s.commandCount || 0, ui.metrics.commands)+metric(s.diagnosticCount, ui.metrics.diagnostics)+metric(s.actionCandidateCount, ui.metrics.actions)+
   '</div></header>';
 }
 function refreshButtons() {
@@ -460,13 +466,13 @@ function wireSidebar() {
 }
 function renderTabs() {
   const labels = t().tabs;
-  const tabs = [['overview',labels.overview],['skills',labels.skills],['workflows',labels.workflows],['rules',labels.rules],['config',labels.config],['diagnostics',labels.diagnostics]];
+  const tabs = [['overview',labels.overview],['skills',labels.skills],['workflows',labels.workflows],['rules',labels.rules],['commands',labels.commands],['config',labels.config],['diagnostics',labels.diagnostics]];
   return '<nav class="tabs">'+tabs.map(([id,label]) => '<button class="tab '+(state.tab===id?'active':'')+'" data-tab="'+id+'">'+h(label)+'</button>').join('')+'</nav>';
 }
 function wireTabs() { document.querySelectorAll('[data-tab]').forEach(btn => btn.addEventListener('click', () => { state.tab = btn.dataset.tab; renderContent(); document.querySelectorAll('[data-tab]').forEach(item => item.classList.toggle('active', item.dataset.tab === state.tab)); })); }
 function renderContent() {
   const c = byId('content');
-  c.innerHTML = ({ overview: renderOverview, skills: renderSkills, workflows: renderWorkflows, rules: renderRules, config: renderConfig, diagnostics: renderDiagnostics }[state.tab] || renderOverview)();
+  c.innerHTML = ({ overview: renderOverview, skills: renderSkills, workflows: renderWorkflows, rules: renderRules, commands: renderCommands, config: renderConfig, diagnostics: renderDiagnostics }[state.tab] || renderOverview)();
   wireContentClicks();
 }
 function filteredSkills() {
@@ -478,6 +484,12 @@ function filteredSkills() {
     return [skill.name, skill.displayName, skill.description, skill.summary, skill.path, ...(skill.workflow?.steps || []), ...(skill.scenarios || [])].join(' ').toLowerCase().includes(q);
   });
 }
+function filteredCommands() {
+  const q = state.query.trim().toLowerCase();
+  const commands = DATA.commands || [];
+  if (!q) return commands;
+  return commands.filter(command => [command.name, command.summary, command.path, command.adapter, ...(command.bullets || []), ...(command.commands || [])].join(' ').toLowerCase().includes(q));
+}
 function renderOverview() {
   const ui = t().overview;
   const skills = filteredSkills();
@@ -488,6 +500,7 @@ function surfaceCards() {
   const s = t().surfaces;
   const items = [
     [s.rules[0], DATA.rules.length, s.rules[1]],
+    [s.commands[0], (DATA.commands || []).length, s.commands[1]],
     [s.config[0], c.configFiles.length, s.config[1]],
     [s.mcp[0], c.mcpServers.length, s.mcp[1]],
     [s.hooks[0], c.hooks.length, s.hooks[1]],
@@ -515,6 +528,10 @@ function renderWorkflows() {
 function renderRules() {
   return '<div class="card-grid">'+(DATA.rules.map(rule => '<article class="card clickable" data-detail-type="rule" data-detail-id="'+h(rule.id)+'"><div class="card-title"><strong>'+h(rule.relativePath)+'</strong>'+badge(rule.adapter)+'</div><div class="summary">'+h(rule.summary)+'</div><div class="badge-row">'+(rule.headings || []).slice(0,4).map(x => badge(x.text)).join('')+'</div></article>').join('') || empty(t().rules.none))+'</div>';
 }
+function renderCommands() {
+  const commands = filteredCommands();
+  return '<div class="card-grid">'+(commands.map(command => '<article class="card clickable" data-detail-type="command" data-detail-id="'+h(command.id)+'"><div class="card-title"><strong>/'+h(command.name)+'</strong>'+badge(command.adapter)+'</div><div class="summary">'+h(command.summary)+'</div><div class="badge-row">'+badge(command.scope || 'project')+(command.commands?.length ? badge(command.commands.length+' cmd') : '')+'</div><div class="meta path">'+h(command.relativePath || command.path)+'</div></article>').join('') || empty(t().config.noneDetected.replace('{title}', t().tabs.commands)))+'</div>';
+}
 function renderConfig() {
   const c = DATA.configs, labels = t().config;
   return '<div class="grid-2">'+surfaceSection(labels.configFiles, c.configFiles, 'config')+surfaceSection(labels.mcpServers, c.mcpServers, 'mcp')+surfaceSection(labels.hooks, c.hooks, 'hook')+surfaceSection(labels.localActions, c.actions, 'action')+surfaceSection(labels.automations, c.automations, 'automation')+surfaceSection(labels.projectScripts, c.projectScripts, 'script')+'</div>';
@@ -532,6 +549,7 @@ function renderDetails() {
   const {type,id} = state.selected;
   if (type === 'skill') return renderSkillDetails(findById(DATA.skills,id), panel);
   if (type === 'rule') return renderRuleDetails(findById(DATA.rules,id), panel);
+  if (type === 'command') return renderCommandDetails(findById(DATA.commands || [],id), panel);
   if (type === 'diagnostic') return renderDiagnosticDetails(findById(DATA.diagnostics,id), panel);
   const surface = findSurface(type,id); if (surface) return renderSurfaceDetails(surface,panel,type);
   panel.innerHTML = '<div class="detail-empty">'+h(t().details.missing)+'</div>';
@@ -548,6 +566,12 @@ function renderRuleDetails(rule,panel) {
   if (!rule) return;
   const d = t().details;
   panel.innerHTML = shell(rule.relativePath, rule.summary, kv([[d.adapter,rule.adapter],[d.scope,rule.scope],[d.path,rule.path],[d.size,rule.size+' bytes']])+list(d.headings,(rule.headings || []).map(x=>x.text))+list(d.keyBullets,rule.bullets)+list(d.commands,rule.commands));
+  done();
+}
+function renderCommandDetails(command,panel) {
+  if (!command) return;
+  const d = t().details;
+  panel.innerHTML = shell('/'+command.name, command.summary, kv([[d.adapter,command.adapter],[d.scope,command.scope],[d.source,command.sourceLabel],[d.path,command.path],[d.size,command.size+' bytes']])+list(d.headings,(command.headings || []).map(x=>x.text))+list(d.keyBullets,command.bullets)+list(d.commands,command.commands)+list(d.triggers,command.triggers));
   done();
 }
 function renderDiagnosticDetails(item,panel) {

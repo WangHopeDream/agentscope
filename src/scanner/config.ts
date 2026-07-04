@@ -15,10 +15,23 @@ export function scanConfigs(projectRoot: string, includeUser = true): ConfigSurf
     join(projectRoot, ".codex", "requirements.toml"),
     join(projectRoot, "codex.toml"),
     join(projectRoot, ".agents", "config.toml"),
+    join(projectRoot, ".claude", "settings.json"),
+    join(projectRoot, ".claude", "settings.local.json"),
+    join(projectRoot, ".claude", ".mcp.json"),
+    join(projectRoot, ".claude", "mcp.json"),
+    join(projectRoot, ".cursor", "mcp.json"),
+    join(projectRoot, ".cursor", "settings.json"),
+    join(projectRoot, ".cursor", "hooks.json"),
   ];
   const userConfigCandidates = [
     join(codexHome, "config.toml"),
     join(codexHome, "config.json"),
+    join(homedir(), ".claude", "settings.json"),
+    join(homedir(), ".claude", "settings.local.json"),
+    join(homedir(), ".claude", ".mcp.json"),
+    join(homedir(), ".cursor", "cli-config.json"),
+    join(homedir(), ".cursor", "mcp.json"),
+    join(homedir(), ".cursor", "settings.json"),
   ];
   const configCandidates = includeUser ? [...projectConfigCandidates, ...userConfigCandidates] : projectConfigCandidates;
 

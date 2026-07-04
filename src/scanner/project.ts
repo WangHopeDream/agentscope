@@ -30,8 +30,17 @@ export function scanProject(projectRoot: string): ProjectIdentity {
   const keyFiles = [
     "AGENTS.md",
     "CLAUDE.md",
+    "CLAUDE.local.md",
+    ".claude/CLAUDE.md",
+    ".claude/rules",
+    ".claude/skills",
+    ".claude/commands",
+    ".claude/settings.json",
     ".cursorrules",
     ".cursor/rules",
+    ".cursor/skills",
+    ".cursor/commands",
+    ".cursor/mcp.json",
     ".agents/skills",
     ".codex/skills",
     ".codex/config.toml",
@@ -71,10 +80,18 @@ export function detectAdapters(projectRoot: string): AgentScopeAdapter[] {
   ) {
     adapters.add("codex");
   }
-  if (existsSync(join(projectRoot, "CLAUDE.md")) || existsSync(join(projectRoot, ".claude"))) {
+  if (
+    existsSync(join(projectRoot, "CLAUDE.md")) ||
+    existsSync(join(projectRoot, "CLAUDE.local.md")) ||
+    existsSync(join(projectRoot, ".claude"))
+  ) {
     adapters.add("claude-code");
   }
-  if (existsSync(join(projectRoot, ".cursor")) || existsSync(join(projectRoot, ".cursorrules"))) {
+  if (
+    existsSync(join(projectRoot, ".cursor")) ||
+    existsSync(join(projectRoot, ".cursorrules")) ||
+    existsSync(join(projectRoot, "AGENTS.md"))
+  ) {
     adapters.add("cursor");
   }
   adapters.add("generic-folder");

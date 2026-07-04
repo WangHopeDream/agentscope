@@ -1,4 +1,5 @@
 import { resolveWorkspaceRoot, countWhere } from "./fs.js";
+import { scanCommands } from "./commands.js";
 import { scanConfigs } from "./config.js";
 import { collectDiagnostics } from "./diagnostics.js";
 import { scanProject } from "./project.js";
@@ -15,9 +16,10 @@ export function scanWorkspace(options: ScanOptions): AgentScopeScan {
   const project = scanProject(projectRoot);
   const rules = scanRules(projectRoot);
   const skills = scanSkills(projectRoot, options.includeUser !== false);
+  const commands = scanCommands(projectRoot, options.includeUser !== false);
   const configs = scanConfigs(projectRoot, options.includeUser !== false);
   const diagnostics = collectDiagnostics(projectRoot, rules, skills, configs);
-  const relationships = buildRelationships(project, rules, skills, configs);
+  const relationships = buildRelationships(project, rules, skills, commands, configs);
   const layers = Array.from(new Set(skills.map((skill) => skill.layer))).sort() as SourceLayer[];
 
   return {
@@ -32,6 +34,7 @@ export function scanWorkspace(options: ScanOptions): AgentScopeScan {
     summary: {
       skillCount: skills.length,
       ruleCount: rules.length,
+      commandCount: commands.length,
       projectSkillCount: countWhere(skills, "layer", "project"),
       userSkillCount: countWhere(skills, "layer", "user"),
       adminSkillCount: countWhere(skills, "layer", "admin"),
@@ -49,6 +52,7 @@ export function scanWorkspace(options: ScanOptions): AgentScopeScan {
     },
     rules,
     skills,
+    commands,
     configs,
     relationships,
     diagnostics,

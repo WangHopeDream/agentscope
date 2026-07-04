@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(agentscope scan *)",
+      "Bash(npm run build)"
+    ]
+  }
+}

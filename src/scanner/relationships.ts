@@ -1,4 +1,5 @@
 import type {
+  AgentCommandRecord,
   ConfigSurface,
   ProjectIdentity,
   RelationshipGraph,
@@ -11,6 +12,7 @@ export function buildRelationships(
   project: ProjectIdentity,
   rules: RuleRecord[],
   skills: SkillRecord[],
+  commands: AgentCommandRecord[],
   configs: ConfigSurface,
 ): RelationshipGraph {
   const nodes: RelationshipNode[] = [
@@ -33,6 +35,17 @@ export function buildRelationships(
       summary: rule.summary,
     });
     edges.push({ from: "project", to: rule.id, label: rule.adapter });
+  }
+
+  for (const command of commands) {
+    nodes.push({
+      id: command.id,
+      label: `/${command.name}`,
+      type: "command",
+      layer: "project",
+      summary: command.summary,
+    });
+    edges.push({ from: "project", to: command.id, label: command.adapter });
   }
 
   const layerNodes = new Map<string, string>();
@@ -104,4 +117,3 @@ export function buildRelationships(
 function titleCase(value: string): string {
   return value.slice(0, 1).toUpperCase() + value.slice(1);
 }
-

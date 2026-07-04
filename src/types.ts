@@ -40,6 +40,7 @@ export interface RuleRecord {
   kind: "agent-rule";
   name: string;
   adapter: AgentScopeAdapter;
+  adapters?: AgentScopeAdapter[];
   path: string;
   relativePath: string;
   scope: string;
@@ -47,6 +48,24 @@ export interface RuleRecord {
   headings: HeadingRecord[];
   bullets: string[];
   commands: string[];
+  size: number;
+}
+
+export interface AgentCommandRecord {
+  id: string;
+  kind: "agent-command";
+  name: string;
+  adapter: AgentScopeAdapter;
+  path: string;
+  relativePath: string;
+  scope: "project" | "user";
+  sourceLabel: string;
+  summary: string;
+  frontmatter: Record<string, string>;
+  headings: HeadingRecord[];
+  bullets: string[];
+  commands: string[];
+  triggers: string[];
   size: number;
 }
 
@@ -146,7 +165,7 @@ export interface RelationshipGraph {
 export interface RelationshipNode {
   id: string;
   label: string;
-  type: "project" | "rule" | "layer" | "skill" | "resource" | "config";
+  type: "project" | "rule" | "command" | "layer" | "skill" | "resource" | "config";
   layer: SourceLayer | "project" | "config";
   summary: string;
 }
@@ -168,6 +187,7 @@ export interface DiagnosticRecord {
 export interface ScanSummary {
   skillCount: number;
   ruleCount: number;
+  commandCount: number;
   projectSkillCount: number;
   userSkillCount: number;
   adminSkillCount: number;
@@ -196,6 +216,7 @@ export interface AgentScopeScan {
   summary: ScanSummary;
   rules: RuleRecord[];
   skills: SkillRecord[];
+  commands: AgentCommandRecord[];
   configs: ConfigSurface;
   relationships: RelationshipGraph;
   diagnostics: DiagnosticRecord[];
@@ -205,4 +226,3 @@ export interface ScanOptions {
   root: string;
   includeUser?: boolean;
 }
-

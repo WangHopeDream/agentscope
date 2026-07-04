@@ -6,12 +6,15 @@ export interface ScanDiff {
   newProject: string;
   rules: CollectionDiff;
   skills: CollectionDiff;
+  commands: CollectionDiff;
   diagnostics: CollectionDiff;
   counts: {
     oldSkills: number;
     newSkills: number;
     oldRules: number;
     newRules: number;
+    oldCommands: number;
+    newCommands: number;
     oldDiagnostics: number;
     newDiagnostics: number;
   };
@@ -36,6 +39,10 @@ export function diffScans(oldScan: AgentScopeScan, newScan: AgentScopeScan): Sca
       oldScan.skills.map((skill) => ({ key: `${skill.layer}:${skill.name}`, fingerprint: skillFingerprint(skill) })),
       newScan.skills.map((skill) => ({ key: `${skill.layer}:${skill.name}`, fingerprint: skillFingerprint(skill) })),
     ),
+    commands: diffCollections(
+      (oldScan.commands || []).map((command) => ({ key: command.relativePath, fingerprint: commandFingerprint(command) })),
+      (newScan.commands || []).map((command) => ({ key: command.relativePath, fingerprint: commandFingerprint(command) })),
+    ),
     diagnostics: diffCollections(
       oldScan.diagnostics.map((item) => ({ key: `${item.severity}:${item.title}:${item.path}`, fingerprint: item.detail })),
       newScan.diagnostics.map((item) => ({ key: `${item.severity}:${item.title}:${item.path}`, fingerprint: item.detail })),
@@ -45,6 +52,8 @@ export function diffScans(oldScan: AgentScopeScan, newScan: AgentScopeScan): Sca
       newSkills: newScan.summary.skillCount,
       oldRules: oldScan.summary.ruleCount,
       newRules: newScan.summary.ruleCount,
+      oldCommands: oldScan.summary.commandCount || 0,
+      newCommands: newScan.summary.commandCount || 0,
       oldDiagnostics: oldScan.summary.diagnosticCount,
       newDiagnostics: newScan.summary.diagnosticCount,
     },
@@ -65,6 +74,16 @@ function diffCollections(
   return { added, removed, changed };
 }
 
+function commandFingerprint(command: AgentScopeScan["commands"][number]): string {
+  return JSON.stringify([
+    command.summary,
+    command.frontmatter,
+    command.bullets,
+    command.commands,
+    command.triggers,
+  ]);
+}
+
 function skillFingerprint(skill: AgentScopeScan["skills"][number]): string {
   return JSON.stringify([
     skill.description,
@@ -75,4 +94,3 @@ function skillFingerprint(skill: AgentScopeScan["skills"][number]): string {
     skill.diagnostics.map((item) => [item.severity, item.title]),
   ]);
 }
-

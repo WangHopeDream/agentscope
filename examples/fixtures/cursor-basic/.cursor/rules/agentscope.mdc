@@ -1,0 +1,10 @@
+---
+description: AgentScope workspace inspection guidance for the synthetic Cursor fixture.
+alwaysApply: false
+---
+
+# AgentScope Cursor Rule
+
+- Run `agentscope scan . --html --project-only` when asked for an agent workspace report.
+- Summarize visible rules, skills, commands, and configs.
+- Point users to the generated HTML report for interactive review.

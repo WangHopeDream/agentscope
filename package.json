@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepare": "npm run build",
-    "scan:self": "node dist/cli.js scan .. --json --html --output examples/generated/self-scan.json --html-output examples/generated/self-scan.html",
+    "scan:self": "node dist/cli.js scan .. --json --html --project-only --output examples/generated/self-scan.json --html-output examples/generated/self-scan.html",
     "privacy:check": "node scripts/privacy-check.mjs",
     "check": "npm run build && npm run privacy:check"
   },

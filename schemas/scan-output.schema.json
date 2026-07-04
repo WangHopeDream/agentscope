@@ -55,6 +55,7 @@
       "properties": {
         "skillCount": { "type": "integer", "minimum": 0 },
         "ruleCount": { "type": "integer", "minimum": 0 },
+        "commandCount": { "type": "integer", "minimum": 0 },
         "diagnosticCount": { "type": "integer", "minimum": 0 },
         "adapters": {
           "type": "array",
@@ -70,6 +71,10 @@
     "skills": {
       "type": "array",
       "items": { "$ref": "#/$defs/skill" }
+    },
+    "commands": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/command" }
     },
     "configs": { "type": "object" },
     "relationships": {
@@ -143,6 +148,20 @@
           "additionalProperties": true
         },
         "resources": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
+    "command": {
+      "type": "object",
+      "required": ["id", "kind", "name", "adapter", "path", "relativePath", "summary"],
+      "properties": {
+        "id": { "type": "string" },
+        "kind": { "const": "agent-command" },
+        "name": { "type": "string" },
+        "adapter": { "$ref": "#/$defs/adapter" },
+        "path": { "type": "string" },
+        "relativePath": { "type": "string" },
+        "summary": { "type": "string" }
       },
       "additionalProperties": true
     },

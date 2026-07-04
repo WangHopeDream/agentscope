@@ -87,6 +87,7 @@ function runDiff(args: string[], defaultLanguage: Language): number {
     console.log(t.diffSkills(diff.counts.oldSkills, diff.counts.newSkills));
     printCollection(t.labels.rules, diff.rules, language);
     printCollection(t.labels.skills, diff.skills, language);
+    printCollection(t.labels.commands, diff.commands, language);
     printCollection(t.labels.diagnostics, diff.diagnostics, language);
   }
   return 0;
@@ -137,7 +138,7 @@ function printScanSummary(scan: AgentScopeScan, language: Language, htmlPath?: s
   console.log(t.scanTitle(scan.project.name));
   console.log(t.root(scan.project.root));
   console.log(t.adapters(scan.summary.adapters.join(", ")));
-  console.log(t.detected(scan.summary.skillCount, scan.summary.ruleCount, scan.summary.diagnosticCount));
+  console.log(t.detected(scan.summary.skillCount, scan.summary.ruleCount, scan.summary.commandCount, scan.summary.diagnosticCount));
   if (scan.project.git.childRepositories.length) {
     console.log(t.childRepositories(scan.project.git.childRepositories.map((repo) => repo.relativePath).join(", ")));
   }

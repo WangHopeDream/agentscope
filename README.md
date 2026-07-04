@@ -112,7 +112,13 @@ examples/            示例扫描输入和输出。
 
 ## 当前状态
 
-早期 Node/TypeScript 实现。第一版 CLI 已支持扫描 Codex-style workspace、输出 JSON、生成单文件 HTML 报告、比较两次扫描结果，并识别多仓库 workspace。Claude Code 和 Cursor adapter 已在中立 schema 中预留，后续会继续加深扫描能力。
+早期 Node/TypeScript 实现。第一版 CLI 已支持扫描 Codex、Claude Code、Cursor-style workspace，输出 JSON，生成单文件 HTML 报告，比较两次扫描结果，并识别多仓库 workspace。
+
+当前主要扫描面：
+
+- Codex：`AGENTS.md`、`.agents/skills`、`.codex/skills`、Codex config/action/automation 候选项。
+- Claude Code：`CLAUDE.md`、`.claude/CLAUDE.md`、`CLAUDE.local.md`、`.claude/rules/**/*.md`、`.claude/skills/**/SKILL.md`、`.claude/commands/*.md`、Claude settings/MCP config。
+- Cursor：`.cursor/rules/**/*.mdc`、`.cursorrules`、`.cursor/skills/**/SKILL.md`、`.cursor/commands/*`、`.cursor/mcp.json`，以及 Cursor 兼容的 `AGENTS.md`。
 
 ---
 
@@ -230,4 +236,10 @@ examples/            Example scan inputs and outputs.
 
 ## Status
 
-Early Node/TypeScript implementation. The first CLI can scan Codex-style workspaces, emit JSON, render a self-contained HTML report, diff two scan outputs, and detect multi-repository workspaces. Claude Code and Cursor adapters are represented in the neutral schema and will deepen over time.
+Early Node/TypeScript implementation. The first CLI can scan Codex, Claude Code, and Cursor-style workspaces, emit JSON, render a self-contained HTML report, diff two scan outputs, and detect multi-repository workspaces.
+
+Current primary scan surfaces:
+
+- Codex: `AGENTS.md`, `.agents/skills`, `.codex/skills`, and Codex config/action/automation candidates.
+- Claude Code: `CLAUDE.md`, `.claude/CLAUDE.md`, `CLAUDE.local.md`, `.claude/rules/**/*.md`, `.claude/skills/**/SKILL.md`, `.claude/commands/*.md`, and Claude settings/MCP config.
+- Cursor: `.cursor/rules/**/*.mdc`, `.cursorrules`, `.cursor/skills/**/SKILL.md`, `.cursor/commands/*`, `.cursor/mcp.json`, and Cursor-compatible `AGENTS.md`.

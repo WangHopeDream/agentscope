@@ -13,6 +13,7 @@ import {
   normalizeList,
   readText,
   relPath,
+  walk,
   walkNamedFiles,
 } from "./fs.js";
 import {
@@ -27,6 +28,7 @@ import {
 } from "./markdown.js";
 
 import type {
+  AgentScopeAdapter,
   DiagnosticRecord,
   FileRecord,
   ScriptRecord,
@@ -40,6 +42,7 @@ interface SkillSourceRoot {
   path: string;
   layer: SourceLayer;
   label: string;
+  adapter: AgentScopeAdapter;
   excludeParts?: string[];
 }
 
@@ -73,10 +76,7 @@ export function scanSkills(projectRoot: string, includeUser = true): SkillRecord
 function discoverSkillSourceRoots(projectRoot: string, includeUser: boolean): SkillSourceRoot[] {
   const home = homedir();
   const codexHome = process.env.CODEX_HOME || join(home, ".codex");
-  const roots: SkillSourceRoot[] = [
-    { path: join(projectRoot, ".agents", "skills"), layer: "project", label: "Project .agents/skills" },
-    { path: join(projectRoot, ".codex", "skills"), layer: "project", label: "Project .codex/skills" },
-  ];
+  const roots: SkillSourceRoot[] = discoverProjectSkillRoots(projectRoot);
 
   if (!includeUser) return roots;
 
@@ -85,37 +85,56 @@ function discoverSkillSourceRoots(projectRoot: string, includeUser: boolean): Sk
       path: join(codexHome, "skills", ".system"),
       layer: "system",
       label: "Codex system skills",
+      adapter: "codex",
     },
     {
       path: join(codexHome, "plugins", "cache"),
       layer: "plugin",
       label: "Codex plugin cache",
+      adapter: "codex",
     },
     {
       path: join(codexHome, "admin", "skills"),
       layer: "admin",
       label: "Managed admin skills",
+      adapter: "codex",
     },
     {
       path: "/Library/Application Support/Codex/skills",
       layer: "admin",
       label: "System-wide admin skills",
+      adapter: "codex",
     },
     {
       path: "/Library/Application Support/OpenAI/Codex/skills",
       layer: "admin",
       label: "OpenAI Codex admin skills",
+      adapter: "codex",
     },
     {
       path: join(codexHome, "skills"),
       layer: "user",
       label: "User Codex skills",
+      adapter: "codex",
       excludeParts: [".system"],
     },
     {
       path: join(home, ".agents", "skills"),
       layer: "user",
       label: "User agent skills",
+      adapter: "codex",
+    },
+    {
+      path: join(home, ".claude", "skills"),
+      layer: "user",
+      label: "User Claude Code skills",
+      adapter: "claude-code",
+    },
+    {
+      path: join(home, ".cursor", "skills"),
+      layer: "user",
+      label: "User Cursor skills",
+      adapter: "cursor",
     },
   );
 
@@ -124,11 +143,48 @@ function discoverSkillSourceRoots(projectRoot: string, includeUser: boolean): Sk
       path: join(home, ".codex", "skills"),
       layer: "user",
       label: "Fallback ~/.codex/skills",
+      adapter: "codex",
       excludeParts: [".system"],
     });
   }
 
   return roots;
+}
+
+function discoverProjectSkillRoots(projectRoot: string): SkillSourceRoot[] {
+  const roots: SkillSourceRoot[] = [];
+  walk(projectRoot, (path, name, isDirectory) => {
+    if (!isDirectory || name !== "skills") return;
+    const parent = basename(dirname(path));
+    const adapter = skillAdapterForParent(parent);
+    if (!adapter) return;
+    roots.push({
+      path,
+      layer: "project",
+      label: `Project ${relPath(path, projectRoot)}`,
+      adapter,
+    });
+  });
+  return uniqueSkillRoots(roots);
+}
+
+function skillAdapterForParent(parent: string): AgentScopeAdapter | undefined {
+  if (parent === ".claude") return "claude-code";
+  if (parent === ".cursor") return "cursor";
+  if (parent === ".agents" || parent === ".codex") return "codex";
+  return undefined;
+}
+
+function uniqueSkillRoots(roots: SkillSourceRoot[]): SkillSourceRoot[] {
+  const seen = new Set<string>();
+  const out: SkillSourceRoot[] = [];
+  for (const root of roots) {
+    const real = resolve(root.path);
+    if (seen.has(real)) continue;
+    seen.add(real);
+    out.push(root);
+  }
+  return out.sort((a, b) => a.path.localeCompare(b.path));
 }
 
 function parseSkill(skillFile: string, projectRoot: string, source: SkillSourceRoot): SkillRecord {
@@ -141,7 +197,7 @@ function parseSkill(skillFile: string, projectRoot: string, source: SkillSourceR
   const displayName = interfaceConfig.display_name || name;
   const resources = scanSkillResources(folder, projectRoot);
   const workflow = extractWorkflow(body, description, name);
-  const triggers = extractTriggers(description, name);
+  const triggers = extractTriggers(description, name, source.adapter);
   const scenarios = classifyScenarios(name, description, body);
   const headings = extractHeadings(body);
   const summary = summarizeSkill(name, description, body);
@@ -150,7 +206,7 @@ function parseSkill(skillFile: string, projectRoot: string, source: SkillSourceR
   return {
     id: makeId("skill", skillFile),
     kind: "skill",
-    adapter: "codex",
+    adapter: source.adapter,
     name,
     displayName,
     description,
@@ -181,6 +237,8 @@ function parseSkill(skillFile: string, projectRoot: string, source: SkillSourceR
 function resolveSkillLayer(skillFile: string, source: SkillSourceRoot, projectRoot: string): SourceLayer {
   if (isWithin(skillFile, join(projectRoot, ".agents", "skills"))) return "project";
   if (isWithin(skillFile, join(projectRoot, ".codex", "skills"))) return "project";
+  if (isWithin(skillFile, join(projectRoot, ".claude", "skills"))) return "project";
+  if (isWithin(skillFile, join(projectRoot, ".cursor", "skills"))) return "project";
   const parts = new Set(skillFile.split(/[\\/]/));
   if (parts.has(".system")) return "system";
   if (parts.has("plugins") && parts.has("cache")) return "plugin";
@@ -307,8 +365,8 @@ function inferWorkflowSteps(description: string, body: string, name: string): st
   return steps;
 }
 
-function extractTriggers(description: string, name: string): string[] {
-  const triggers = [`$${name}`];
+function extractTriggers(description: string, name: string, adapter: AgentScopeAdapter): string[] {
+  const triggers = [adapter === "codex" ? `$${name}` : `/${name}`];
   const desc = collapseSpace(description);
   const useWhen = /use when\s+(.+?)(?:\.|$)/i.exec(desc);
   if (useWhen) triggers.push(useWhen[1].trim());

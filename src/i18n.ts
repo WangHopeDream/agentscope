@@ -22,8 +22,8 @@ export const CLI_TEXT = {
     scanTitle: (name: string) => `AgentScope 扫描：${name}`,
     root: (root: string) => `根目录：${root}`,
     adapters: (adapters: string) => `适配器：${adapters}`,
-    detected: (skills: number, rules: number, diagnostics: number) =>
-      `检测到 ${skills} 个 Skill、${rules} 条规则、${diagnostics} 条诊断。`,
+    detected: (skills: number, rules: number, commands: number, diagnostics: number) =>
+      `检测到 ${skills} 个 Skill、${rules} 条规则、${commands} 个命令、${diagnostics} 条诊断。`,
     childRepositories: (repos: string) => `子仓库：${repos}`,
     diffTitle: (oldProject: string, newProject: string) => `AgentScope 差异：${oldProject} -> ${newProject}`,
     diffSkills: (oldSkills: number, newSkills: number) => `Skills：${oldSkills} -> ${newSkills}`,
@@ -35,6 +35,7 @@ export const CLI_TEXT = {
     labels: {
       rules: "规则",
       skills: "Skills",
+      commands: "命令",
       diagnostics: "诊断",
     },
     help: (version: string) => `AgentScope ${version}
@@ -62,8 +63,8 @@ export const CLI_TEXT = {
     scanTitle: (name: string) => `AgentScope scan: ${name}`,
     root: (root: string) => `Root: ${root}`,
     adapters: (adapters: string) => `Adapters: ${adapters}`,
-    detected: (skills: number, rules: number, diagnostics: number) =>
-      `Detected ${skills} skills, ${rules} rules, ${diagnostics} diagnostics.`,
+    detected: (skills: number, rules: number, commands: number, diagnostics: number) =>
+      `Detected ${skills} skills, ${rules} rules, ${commands} commands, ${diagnostics} diagnostics.`,
     childRepositories: (repos: string) => `Child repositories: ${repos}`,
     diffTitle: (oldProject: string, newProject: string) => `AgentScope diff: ${oldProject} -> ${newProject}`,
     diffSkills: (oldSkills: number, newSkills: number) => `Skills: ${oldSkills} -> ${newSkills}`,
@@ -75,6 +76,7 @@ export const CLI_TEXT = {
     labels: {
       rules: "Rules",
       skills: "Skills",
+      commands: "Commands",
       diagnostics: "Diagnostics",
     },
     help: (version: string) => `AgentScope ${version}
@@ -92,4 +94,3 @@ Examples:
 `,
   },
 } as const;
-

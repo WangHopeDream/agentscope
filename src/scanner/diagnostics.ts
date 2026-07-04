@@ -34,10 +34,22 @@ export function collectDiagnostics(
     );
   }
 
-  const projectSkillDir = join(projectRoot, ".agents", "skills");
-  if (existsSync(projectSkillDir) && !skills.some((skill) => skill.layer === "project")) {
+  const projectSkillDirs = [
+    join(projectRoot, ".agents", "skills"),
+    join(projectRoot, ".codex", "skills"),
+    join(projectRoot, ".claude", "skills"),
+    join(projectRoot, ".cursor", "skills"),
+  ];
+  for (const projectSkillDir of projectSkillDirs) {
+    if (!existsSync(projectSkillDir)) continue;
+    if (skills.some((skill) => skill.layer === "project" && skill.path.startsWith(projectSkillDir))) continue;
     diagnostics.push(
-      diag("warning", "Project Skill directory is empty", ".agents/skills exists but no SKILL.md files were found below it.", projectSkillDir),
+      diag(
+        "warning",
+        "Project Skill directory is empty",
+        `${projectSkillDir} exists but no SKILL.md files were found below it.`,
+        projectSkillDir,
+      ),
     );
   }
 
@@ -47,4 +59,3 @@ export function collectDiagnostics(
 
   return diagnostics;
 }
-
